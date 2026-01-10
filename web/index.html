@@ -1,80 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
-  
-  <title>ZIGCLIP - The Arena</title>
-  <meta name="description" content="Video clip voting arena with ELO ratings">
-  
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json">
-  
-  <!-- Icons -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Theme Color -->
-  <meta name="theme-color" content="#050505">
-  
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #050505;
-      overflow: hidden;
-    }
-    
-    #loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #050505;
-    }
-    
-    #loading-text {
-      color: #00FFD0;
-      font-family: monospace;
-      font-size: 24px;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="ZIGCLIP - Cyber Athlete Arena">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050505">
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <link rel="manifest" href="manifest.json">
+    <title>ZIGCLIP</title>
+    <script>
+        var serviceWorkerVersion = null;
+    </script>
+    <script>
+        window.flutterWebRenderer = "canvaskit";
+    </script>
 </head>
 <body>
-  <div id="loading">
-    <div id="loading-text">LOADING ARENA...</div>
-  </div>
-
-  <script>
-    var serviceWorkerVersion = null;
-    window.addEventListener('load', function(ev) {
-      var loading = document.querySelector('#loading');
-      loading.style.display = 'none';
-      
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine({
-            renderer: "canvaskit",
-          }).then(function(appRunner) {
-            appRunner.runApp();
-          });
-        }
-      });
-    });
-  </script>
-  
-  <script src="flutter.js" defer></script>
+    <script src="flutter.js" defer></script>
 </body>
 </html>
