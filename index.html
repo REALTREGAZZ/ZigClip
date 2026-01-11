@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#00FFD0">
+  <title>ZIGCLIP - Valorant Duel Arena</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <div id="flash"></div>
+  <div id="elo-delta" class="hidden">+0 ELO</div>
+
+  <div id="home-screen" class="screen">
+    <h1>ZIGCLIP</h1>
+    <p>El primer sistema de ranking ELO para clips de Valorant. Swipea para elegir el mejor play y sube tu ELO.</p>
+    <button id="start-btn" class="btn">START ARENA</button>
+  </div>
+
+  <div id="arena-screen" class="screen hidden">
+    <div class="arena-container">
+      <div class="video-container">
+        <video id="video-left" loop muted playsinline></video>
+        <div class="clip-info left">
+          <span id="clip-name-left">PLAYER_NAME</span>
+          <span id="clip-elo-left">2450 ELO</span>
+        </div>
+      </div>
+      <div class="video-container">
+        <video id="video-right" loop muted playsinline></video>
+        <div class="clip-info right">
+          <span id="clip-name-right">PLAYER_NAME</span>
+          <span id="clip-elo-right">2100 ELO</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="brag-screen" class="screen hidden">
+    <div class="brag-card">
+      <h2>TU ESTADO</h2>
+      <div class="stat" id="user-elo">2450 ELO</div>
+      <div class="stat-label">ELO RATING</div>
+      <div class="stat" id="user-wins">156</div>
+      <div class="stat-label">VICTORIAS</div>
+      <div class="stat" id="user-losses">77</div>
+      <div class="stat-label">DERROTAS</div>
+      <div class="stat" id="user-winrate">67.2%</div>
+      <div class="stat-label">WIN RATE</div>
+      <div class="stat" id="duel-count">0</div>
+      <div class="stat-label">DUELOS</div>
+      <button id="export-btn" class="btn">EXPORTAR STATUS</button>
+    </div>
+  </div>
+
+  <div id="ranking-screen" class="screen hidden">
+    <h2 style="text-align: center; margin: 1rem 0;">RANKING GLOBAL</h2>
+    <ul id="ranking-list"></ul>
+  </div>
+
+  <div class="tabs">
+    <div class="tab" data-screen="home">
+      <i>🏠</i>
+      HOME
+    </div>
+    <div class="tab" data-screen="arena">
+      <i>⚔️</i>
+      ARENA
+    </div>
+    <div class="tab" data-screen="brag">
+      <i>🏆</i>
+      BRAG
+    </div>
+    <div class="tab" data-screen="ranking">
+      <i>📊</i>
+      RANKING
+    </div>
+  </div>
+
+  <canvas id="export-canvas"></canvas>
+  <audio id="kill-sound" preload="auto">
+    <source src="assets/sounds/kill.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="app.js"></script>
+</body>
+</html>
