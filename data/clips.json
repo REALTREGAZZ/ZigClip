@@ -1,0 +1,54 @@
+{
+  "clips": [
+    {
+      "id": "clip_001",
+      "name": "RADIANT_ACE_1v5",
+      "elo": 2850,
+      "wins": 89,
+      "losses": 12,
+      "video_url": "assets/videos/clip_1.mp4",
+      "owner": "Pro Player",
+      "badge": "gold"
+    },
+    {
+      "id": "clip_002",
+      "name": "IMMORTAL_CLUTCH",
+      "elo": 2650,
+      "wins": 72,
+      "losses": 18,
+      "video_url": "assets/videos/clip_2.mp4",
+      "owner": "Elite Gamer",
+      "badge": "silver"
+    },
+    {
+      "id": "clip_003",
+      "name": "ELITE_HEADSHOT",
+      "elo": 2450,
+      "wins": 65,
+      "losses": 25,
+      "video_url": "assets/videos/clip_3.mp4",
+      "owner": "Sharp Shooter",
+      "badge": "bronze"
+    },
+    {
+      "id": "clip_004",
+      "name": "DIAMOND_KNIFE",
+      "elo": 2280,
+      "wins": 58,
+      "losses": 32,
+      "video_url": "assets/videos/clip_4.mp4",
+      "owner": "Knife Master",
+      "badge": ""
+    },
+    {
+      "id": "clip_005",
+      "name": "PLATINUM_ULTIMATE",
+      "elo": 2100,
+      "wins": 45,
+      "losses": 42,
+      "video_url": "assets/videos/clip_5.mp4",
+      "owner": "Ultimate User",
+      "badge": ""
+    }
+  ]
+}

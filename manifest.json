@@ -1,0 +1,19 @@
+{
+  "name": "ZIGCLIP - Arena",
+  "short_name": "ZIGCLIP",
+  "description": "Valida tus skills en duelos de clips",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#00FFD0",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "scope": "/"
+}

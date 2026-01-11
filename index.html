@@ -3,341 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Valida tus skills en duelos de clips">
+  <meta name="theme-color" content="#00FFD0">
   <title>ZIGCLIP - Arena</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; }
-    body { background: #050505; color: #B0B0B0; font-family: 'Courier New', monospace; overflow: hidden; }
-    
-    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; }
-    .screen.active { display: flex; flex-direction: column; }
-    
-    #startup { background: linear-gradient(135deg, #050505, #1a1a1a); justify-content: center; align-items: center; }
-    .startup-content { text-align: center; }
-    .startup-content h1 { font-size: 4rem; color: #00FFD0; text-shadow: 0 0 30px #00FFD0; margin-bottom: 1rem; letter-spacing: 3px; }
-    .startup-content p { font-size: 1.2rem; color: #B0B0B0; margin-bottom: 2rem; }
-    
-    .btn { background: linear-gradient(135deg, #00FFD0, #00CC9D); border: 2px solid #00FFD0; color: #050505; padding: 1rem 2rem; font-size: 1.1rem; font-family: 'Courier New', monospace; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 20px rgba(0, 255, 208, 0.4); transition: all 0.3s; }
-    .btn:hover { box-shadow: 0 0 30px rgba(0, 255, 208, 0.7); transform: scale(1.05); }
-    
-    #arena { flex-direction: column; padding: 1rem; justify-content: space-between; }
-    .arena-header { display: flex; justify-content: space-between; padding: 1rem; color: #00FFD0; border-bottom: 1px solid rgba(0, 255, 208, 0.2); }
-    
-    .arena-videos { display: flex; gap: 1rem; flex: 1; overflow: hidden; }
-    .video-container { flex: 1; position: relative; background: #1a1a1a; border-radius: 8px; overflow: hidden; }
-    .video-container video { width: 100%; height: 100%; object-fit: cover; }
-    
-    .clip-info { position: absolute; top: 1rem; left: 50%; transform: translateX(-50%); text-align: center; color: #00FFD0; font-size: 0.9rem; background: rgba(5, 5, 5, 0.7); padding: 0.5rem 1rem; border-radius: 4px; }
-    
-    #elo-delta { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; font-weight: bold; color: #00FF00; text-shadow: 0 0 20px #00FF00; opacity: 1; pointer-events: none; display: none; }
-    #elo-delta.show { display: block; animation: popIn 0.6s ease-out; }
-    @keyframes popIn { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0); } 50% { transform: translate(-50%, -50%) scale(1.2); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
-    
-    #flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0, 255, 208, 0.8), transparent); opacity: 0; pointer-events: none; z-index: 5; }
-    
-    #ranking { overflow-y: auto; padding: 1rem; }
-    #ranking h2 { color: #00FFD0; margin-bottom: 1rem; text-shadow: 0 0 20px #00FFD0; }
-    #ranking-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    #ranking-table th, #ranking-table td { padding: 0.8rem; text-align: left; border-bottom: 1px solid rgba(0, 255, 208, 0.1); }
-    #ranking-table th { color: #00FFD0; background: rgba(0, 255, 208, 0.05); }
-    
-    #brag { justify-content: center; align-items: center; }
-    .stats-panel { text-align: center; }
-    .stat-big span { font-size: 4rem; color: #00FFD0; text-shadow: 0 0 20px #00FFD0; display: block; font-weight: bold; }
-    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin: 2rem 0; }
-    .stat span { font-size: 2rem; color: #00FFD0; display: block; }
-    
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; gap: 0; background: rgba(5, 5, 5, 0.9); border-top: 1px solid rgba(0, 255, 208, 0.2); z-index: 100; }
-    .nav-btn { flex: 1; padding: 1rem; background: transparent; border: none; color: #B0B0B0; font-family: 'Courier New', monospace; cursor: pointer; transition: all 0.3s; text-transform: uppercase; }
-    .nav-btn.active { color: #00FFD0; background: rgba(0, 255, 208, 0.05); border-bottom: 2px solid #00FFD0; }
-  </style>
+  
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./assets/logo.svg">
+  
+  <link rel="stylesheet" href="./css/reset.css">
+  <link rel="stylesheet" href="./css/theme.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/screens.css">
+  <link rel="stylesheet" href="./css/animations.css">
 </head>
 <body>
-  <!-- STARTUP -->
+  
+  <!-- STARTUP SCREEN -->
   <div id="startup" class="screen active">
     <div class="startup-content">
-      <h1>ZIGCLIP</h1>
+      <h1 class="glow">ZIGCLIP</h1>
       <p>ENTER THE ARENA</p>
       <button id="start-btn" class="btn">START</button>
     </div>
   </div>
 
-  <!-- ARENA -->
+  <!-- ARENA SCREEN -->
   <div id="arena" class="screen">
     <div class="arena-header">
       <span>DUEL #<span id="duel-count">0</span></span>
-      <span id="user-elo">1800 ELO</span>
+      <span id="user-elo">2450 ELO</span>
     </div>
+    
     <div class="arena-videos">
       <div class="video-container">
         <video id="video-left" playsinline muted preload="auto"></video>
-        <div class="clip-info"><span id="clip-name-left">LOADING</span><span id="clip-elo-left">1800 ELO</span></div>
+        <div class="clip-info">
+          <span id="clip-name-left">LOADING</span>
+          <span id="clip-elo-left">1800 ELO</span>
+        </div>
       </div>
+      
       <div class="video-container">
         <video id="video-right" playsinline muted preload="auto"></video>
-        <div class="clip-info"><span id="clip-name-right">LOADING</span><span id="clip-elo-right">1800 ELO</span></div>
+        <div class="clip-info">
+          <span id="clip-name-right">LOADING</span>
+          <span id="clip-elo-right">1800 ELO</span>
+        </div>
       </div>
     </div>
+    
     <div id="elo-delta">+18 ELO</div>
     <div id="flash"></div>
   </div>
 
-  <!-- RANKING -->
+  <!-- RANKING SCREEN -->
   <div id="ranking" class="screen">
     <h2>THE WALL OF EGO</h2>
     <table id="ranking-table">
-      <thead><tr><th>RANK</th><th>USERNAME</th><th>ELO</th><th>BADGE</th></tr></thead>
+      <thead>
+        <tr>
+          <th>RANK</th>
+          <th>USERNAME</th>
+          <th>ELO</th>
+          <th>BADGE</th>
+        </tr>
+      </thead>
       <tbody id="ranking-body"></tbody>
     </table>
   </div>
 
-  <!-- BRAG -->
+  <!-- BRAG SCREEN -->
   <div id="brag" class="screen">
     <div class="stats-panel">
-      <div class="stat-big"><span id="brag-elo">1800</span><p>ELO</p></div>
-      <div class="stats-grid">
-        <div class="stat"><span id="brag-wins">0</span><p>Wins</p></div>
-        <div class="stat"><span id="brag-losses">0</span><p>Losses</p></div>
-        <div class="stat"><span id="brag-rate">0%</span><p>Win Rate</p></div>
+      <div class="stat-big">
+        <span id="brag-elo">2450</span>
+        <p>ELO RATING</p>
       </div>
+      
+      <div class="stats-grid">
+        <div class="stat">
+          <span id="brag-wins">156</span>
+          <p>Wins</p>
+        </div>
+        <div class="stat">
+          <span id="brag-losses">77</span>
+          <p>Losses</p>
+        </div>
+        <div class="stat">
+          <span id="brag-rate">67%</span>
+          <p>Win Rate</p>
+        </div>
+      </div>
+      
       <button id="export-btn" class="btn">EXPORT STATUS</button>
-      <canvas id="export-canvas" style="display:none;"></canvas>
+      <canvas id="export-canvas"></canvas>
     </div>
   </div>
 
-  <!-- NAV -->
+  <!-- BOTTOM NAVIGATION -->
   <nav class="bottom-nav">
     <button data-screen="arena" class="nav-btn active">⚔️ ARENA</button>
     <button data-screen="ranking" class="nav-btn">👑 RANKING</button>
     <button data-screen="brag" class="nav-btn">💪 BRAG</button>
   </nav>
 
-  <!-- ÚNICO SCRIPT -->
-  <script>
-class ZigClip {
-  constructor() {
-    this.clips = [
-      { id: 1, name: 'RADIANT_ACE_1v5', elo: 2850, wins: 89, losses: 12, video: 'assets/videos/clip_1.mp4', agent: 'Jett' },
-      { id: 2, name: 'IMMORTAL_CLUTCH', elo: 2650, wins: 72, losses: 18, video: 'assets/videos/clip_2.mp4', agent: 'Viper' },
-      { id: 3, name: 'ELITE_HEADSHOT', elo: 2450, wins: 65, losses: 25, video: 'assets/videos/clip_3.mp4', agent: 'Reyna' },
-      { id: 4, name: 'DIAMOND_KNIFE', elo: 2280, wins: 58, losses: 32, video: 'assets/videos/clip_4.mp4', agent: 'Raze' },
-      { id: 5, name: 'PLATINUM_ULTIMATE', elo: 2100, wins: 45, losses: 42, video: 'assets/videos/clip_5.mp4', agent: 'Phoenix' }
-    ];
-    this.user = { elo: 2450, wins: 156, losses: 77, duels: 0, agent: 'Jett' };
-    this.currentDuel = 0;
-    this.isProcessing = false;
-    this.init();
-  }
-
-  init() {
-    console.log('✅ ZIGCLIP Started');
-    document.getElementById('start-btn').addEventListener('click', () => this.startArena());
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', (e) => this.switchScreen(e.target.dataset.screen)));
-    
-    const videoLeft = document.getElementById('video-left');
-    const videoRight = document.getElementById('video-right');
-    [videoLeft, videoRight].forEach((v, i) => {
-      v.addEventListener('touchstart', (e) => this.touchY = e.touches[0].clientY);
-      v.addEventListener('touchend', (e) => Math.abs(this.touchY - e.changedTouches[0].clientY) > 50 && !this.isProcessing && this.handleWin(i));
-      v.addEventListener('mousedown', (e) => this.touchY = e.clientY);
-      v.addEventListener('mouseup', (e) => Math.abs(this.touchY - e.clientY) > 50 && !this.isProcessing && this.handleWin(i));
-    });
-
-    document.getElementById('export-btn').addEventListener('click', () => this.exportStatus());
-    this.loadVideos();
-    this.updateRanking();
-    this.updateBrag();
-  }
-
-  startArena() { this.switchScreen('arena'); this.playVideos(); }
-  switchScreen(s) {
-    document.querySelectorAll('.screen').forEach(x => x.classList.remove('active'));
-    document.getElementById(s).classList.add('active');
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === s));
-  }
-
-  loadVideos() {
-    const l = this.clips[this.currentDuel % this.clips.length];
-    const r = this.clips[(this.currentDuel + 1) % this.clips.length];
-    document.getElementById('video-left').src = l.video;
-    document.getElementById('video-right').src = r.video;
-    document.getElementById('clip-name-left').textContent = l.name;
-    document.getElementById('clip-elo-left').textContent = `${l.elo} ELO`;
-    document.getElementById('clip-name-right').textContent = r.name;
-    document.getElementById('clip-elo-right').textContent = `${r.elo} ELO`;
-  }
-
-  async playVideos() {
-    try { await document.getElementById('video-left').play(); } 
-    catch(e) { console.error('Play error:', e); }
-  }
-
-  async handleWin(winnerId) {
-    this.isProcessing = true;
-    const l = this.clips[this.currentDuel % this.clips.length];
-    const r = this.clips[(this.currentDuel + 1) % this.clips.length];
-    const winner = winnerId === 0 ? l : r;
-    const loser = winnerId === 0 ? r : l;
-    
-    const eloGain = this.calculateElo(winner.elo, loser.elo);
-    winner.elo += eloGain;
-    loser.elo -= eloGain;
-    this.user.duels++;
-    this.user.wins++;
-    this.user.elo += eloGain;
-
-    this.showFlash();
-    this.showEloDelta(eloGain);
-    this.playKillSound();
-
-    await new Promise(r => setTimeout(r, 600));
-    this.currentDuel++;
-    this.loadVideos();
-    await this.playVideos();
-    this.updateRanking();
-    this.updateBrag();
-    this.isProcessing = false;
-  }
-
-  calculateElo(wElo, lElo) {
-    const K = 32;
-    const exp = 1 / (1 + Math.pow(10, (lElo - wElo) / 400));
-    return Math.round(K * (1 - exp));
-  }
-
-  showFlash() {
-    const f = document.getElementById('flash');
-    f.style.opacity = '1';
-    setTimeout(() => f.style.opacity = '0', 200);
-  }
-
-  showEloDelta(delta) {
-    const el = document.getElementById('elo-delta');
-    let current = 0;
-    const step = delta / 20;
-    const interval = setInterval(() => {
-      current += step;
-      if (current >= delta) { current = delta; clearInterval(interval); }
-      el.textContent = `+${Math.floor(current)} ELO`;
-    }, 20);
-    el.style.color = '#00FF00';
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 1500);
-  }
-
-  playKillSound() {
-    const audio = new Audio('assets/sounds/kill.mp3');
-    audio.volume = 0.3;
-    audio.play().catch(e => console.warn('Audio failed:', e));
-  }
-
-  updateRanking() {
-    const tbody = document.getElementById('ranking-body');
-    tbody.innerHTML = '';
-    for (let i = 1; i <= 100; i++) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>#${i}</td><td>PLAYER_${i}</td><td>${2500 - i * 15}</td><td>${i <= 1 ? 'APEX' : i <= 3 ? 'ELITE' : i <= 10 ? 'VET' : ''}</td>`;
-      tbody.appendChild(tr);
-    }
-  }
-
-  updateBrag() {
-    document.getElementById('brag-elo').textContent = this.user.elo;
-    document.getElementById('brag-wins').textContent = this.user.wins;
-    document.getElementById('brag-losses').textContent = this.user.losses;
-    document.getElementById('brag-rate').textContent = this.user.wins + this.user.losses > 0 ? Math.floor((this.user.wins / (this.user.wins + this.user.losses)) * 100) + '%' : '0%';
-    document.getElementById('user-elo').textContent = `${this.user.elo} ELO`;
-    document.getElementById('duel-count').textContent = this.currentDuel + 1;
-  }
-
-  exportStatus() {
-    const canvas = document.getElementById('export-canvas');
-    canvas.width = 1080;
-    canvas.height = 1920;
-    const ctx = canvas.getContext('2d');
-
-    const grad = ctx.createLinearGradient(0, 0, 0, 1920);
-    grad.addColorStop(0, '#00FFD0');
-    grad.addColorStop(0.5, '#1a1a1a');
-    grad.addColorStop(1, '#050505');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1080, 1920);
-
-    ctx.font = 'bold 140px Courier New';
-    ctx.fillStyle = '#00FFD0';
-    ctx.textAlign = 'center';
-    ctx.shadowColor = 'rgba(0, 255, 208, 0.5)';
-    ctx.shadowBlur = 30;
-    ctx.fillText('ZIGCLIP', 540, 200);
-
-    const tier = this.user.elo >= 2700 ? { name: 'RADIANT', color: '#FF0000' } : this.user.elo >= 2500 ? { name: 'IMMORTAL', color: '#FF6B9D' } : this.user.elo >= 2400 ? { name: 'ELITE', color: '#00FFD0' } : { name: 'DIAMOND', color: '#9D4EDD' };
-    ctx.font = 'bold 120px Courier New';
-    ctx.fillStyle = tier.color;
-    ctx.fillText(tier.name, 540, 500);
-
-    ctx.strokeStyle = '#00FFD0';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(150, 600);
-    ctx.lineTo(930, 600);
-    ctx.stroke();
-
-    ctx.font = 'bold 140px Courier New';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.shadowColor = 'rgba(0, 255, 208, 0.3)';
-    ctx.fillText(`${this.user.elo}`, 540, 900);
-
-    ctx.font = '40px Courier New';
-    ctx.fillStyle = '#B0B0B0';
-    ctx.shadowBlur = 0;
-    ctx.fillText('ELO RATING', 540, 970);
-
-    ctx.font = '60px Courier New';
-    ctx.fillStyle = '#00FF00';
-    ctx.textAlign = 'left';
-    ctx.fillText(`${this.user.wins}W`, 200, 1150);
-    ctx.fillStyle = '#FF3B3B';
-    ctx.textAlign = 'right';
-    ctx.fillText(`${this.user.losses}L`, 880, 1150);
-
-    const rate = this.user.wins + this.user.losses > 0 ? ((this.user.wins / (this.user.wins + this.user.losses)) * 100).toFixed(1) : 0;
-    ctx.font = '50px Courier New';
-    ctx.fillStyle = '#B0B0B0';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${rate}% WIN RATE`, 540, 1300);
-
-    ctx.font = 'bold 50px Courier New';
-    ctx.fillStyle = '#00FFD0';
-    ctx.fillText(`MAIN: ${this.user.agent}`, 540, 1500);
-
-    ctx.strokeStyle = '#00FFD0';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(150, 1600);
-    ctx.lineTo(930, 1600);
-    ctx.stroke();
-
-    const phrases = ['¿Crees que puedes superarme?', 'Esta es mi clase', 'Únete si eres lo suficiente bueno'];
-    ctx.font = 'italic 40px Courier New';
-    ctx.fillStyle = '#FFD700';
-    ctx.fillText(phrases[Math.floor(Math.random() * phrases.length)], 540, 1800);
-
-    ctx.font = '35px Courier New';
-    ctx.fillStyle = '#00FFD0';
-    ctx.fillText('ENTRA EN ZIGCLIP.IO', 540, 1900);
-
-    canvas.toBlob(blob => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ZIGCLIP-STATUS-${this.user.elo}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => { window.app = new ZigClip(); });
-  </script>
+  <script type="module" src="./js/app.js"></script>
 </body>
 </html>
