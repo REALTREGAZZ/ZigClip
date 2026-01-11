@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZIGCLIP Basic Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .test-section { margin: 20px 0; padding: 15px; background: white; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; }
+        #test-results { margin-top: 20px; padding: 15px; background: #e0e0e0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>ZIGCLIP Basic Test</h1>
+    
+    <div class="test-section">
+        <h2>Storage Test</h2>
+        <button id="test-storage">Test Storage Initialization</button>
+        <button id="test-elo">Test ELO Calculation</button>
+    </div>
+    
+    <div id="test-results"></div>
+    
+    <script src="js/storage.js"></script>
+    <script src="js/elo.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const results = document.getElementById('test-results');
+            
+            function logResult(message, isError = false) {
+                const p = document.createElement('p');
+                p.textContent = message;
+                p.style.color = isError ? 'red' : 'green';
+                results.appendChild(p);
+                console.log(message);
+            }
+            
+            // Test storage
+            document.getElementById('test-storage').addEventListener('click', () => {
+                try {
+                    StorageService.initializeIfNeeded();
+                    const clips = StorageService.loadClips();
+                    const profile = StorageService.loadProfile();
+                    logResult(`Storage initialized. Found ${clips.length} clips and 1 profile.`);
+                    logResult(`User profile: ${profile.username}, ELO: ${profile.elo}`);
+                } catch (e) {
+                    logResult(`Storage test failed: ${e.message}`, true);
+                }
+            });
+            
+            // Test ELO
+            document.getElementById('test-elo').addEventListener('click', () => {
+                try {
+                    const user = { id: 'user', elo: 1500 };
+                    const opponent = { id: 1, elo: 1500 };
+                    const result = ELOCalculator.calculateDuel(user, opponent);
+                    logResult(`ELO test: Winner +${result.winner_delta}, Loser ${result.loser_delta}`);
+                    logResult(`New ELOs: Winner ${result.new_winner_elo}, Loser ${result.new_loser_elo}`);
+                } catch (e) {
+                    logResult(`ELO test failed: ${e.message}`, true);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

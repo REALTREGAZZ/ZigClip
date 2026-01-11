@@ -1,84 +1,136 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base href="$FLUTTER_BASE_HREF">
-  
   <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Competitive skill validation for gaming clips">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="ZIGCLIP">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="description" content="Offline competitive skill validation arena">
+  <meta name="theme-color" content="#00FFD0">
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  
-  <title>ZIGCLIP - Competitive Clip Validation</title>
+  <title>ZIGCLIP - Offline Arena</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
   
-  <style>
-    body {
-      margin: 0;
-      background-color: #050505;
-      color: #00FFD0;
-      font-family: 'Courier New', monospace;
-    }
-    
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-    }
-    
-    .loading-text {
-      margin-top: 20px;
-      font-size: 24px;
-      letter-spacing: 4px;
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
-    .spinner {
-      width: 60px;
-      height: 60px;
-      border: 4px solid #00FFD0;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="icon" type="image/png" href="assets/icons/icon-192.png">
 </head>
 <body>
-  <div id="loading" class="loading">
-    <div class="spinner"></div>
-    <div class="loading-text">ZIGCLIP</div>
+  <div id="app">
+    <!-- Navigation -->
+    <nav class="bottom-nav">
+      <button id="nav-arena" class="nav-btn active">⚔️ ARENA</button>
+      <button id="nav-ranking" class="nav-btn">👑 RANKING</button>
+      <button id="nav-brag" class="nav-btn">💪 BRAG</button>
+    </nav>
+
+    <!-- Arena Screen -->
+    <div id="arena" class="screen active">
+      <div class="arena-header">
+        <span>DUEL #<span id="duel-count">0</span></span>
+        <span id="user-elo">0 ELO</span>
+      </div>
+      
+      <div class="arena-container">
+        <div class="clip-left">
+          <video id="current-video" playsinline></video>
+          <div class="swipe-indicator">SWIPE UP TO WIN</div>
+        </div>
+        <div class="clip-right">
+          <video id="next-video" playsinline></video>
+          <div class="swipe-indicator">SWIPE UP TO WIN</div>
+        </div>
+      </div>
+      
+      <div id="elo-delta"></div>
+      <canvas id="particles"></canvas>
+      <div id="flash-overlay"></div>
+    </div>
+
+    <!-- Ranking Screen -->
+    <div id="ranking" class="screen">
+      <div class="ranking-header">
+        <h2>THE WALL OF EGO</h2>
+        <div class="filter-tabs">
+          <button class="tab active" data-filter="all">ALL TIME</button>
+          <button class="tab" data-filter="week">THIS WEEK</button>
+          <button class="tab" data-filter="month">THIS MONTH</button>
+        </div>
+      </div>
+      
+      <div class="ranking-table">
+        <table>
+          <thead>
+            <tr>
+              <th>RANK</th>
+              <th>USERNAME</th>
+              <th>ELO</th>
+              <th>WIN RATE</th>
+              <th>BADGE</th>
+            </tr>
+          </thead>
+          <tbody id="ranking-body"></tbody>
+        </table>
+      </div>
+      
+      <div class="ranking-footer">
+        <div class="your-position">
+          <span id="your-position">TU POSICIÓN: #0</span>
+          <span id="your-percentile">TOP 100%</span>
+          <span id="your-trend">-</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Brag Screen -->
+    <div id="brag" class="screen">
+      <div class="brag-container">
+        <div class="stats-panel">
+          <div class="stat-large">
+            <span id="brag-elo">0</span>
+            <p>ELO</p>
+          </div>
+          
+          <div class="stats-grid">
+            <div class="stat">
+              <span id="brag-winrate">0%</span>
+              <p>Win Rate</p>
+            </div>
+            <div class="stat">
+              <span id="brag-wins">0</span>
+              <p>Wins</p>
+            </div>
+            <div class="stat">
+              <span id="brag-losses">0</span>
+              <p>Losses</p>
+            </div>
+          </div>
+          
+          <div class="badge-display">
+            <div id="brag-badge"></div>
+            <span id="brag-percentile">TOP 100%</span>
+          </div>
+        </div>
+        
+        <button id="export-status-btn" class="btn-export">EXPORTAR STATUS</button>
+        <canvas id="status-canvas" style="display:none;"></canvas>
+      </div>
+    </div>
   </div>
-  
-  <script>
-    window.addEventListener('load', function(ev) {
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
-            appRunner.runApp();
-          });
-        }
-      });
-    });
-  </script>
-  <script src="flutter.js" defer></script>
+
+  <!-- Audio -->
+  <audio id="kill-sound" src="assets/sounds/kill.mp3" preload="auto"></audio>
+
+  <!-- Scripts -->
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/elo.js"></script>
+  <script src="js/preloader.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/ranking.js"></script>
+  <script src="js/brag.js"></script>
+  <script src="js/arena.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
