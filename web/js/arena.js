@@ -10,32 +10,26 @@ class ArenaService {
     this.touchEndY = 0;
   }
 
+  setPreloader(preloader) {
+    this.preloader = preloader;
+  }
+
   initialize() {
-   // Initialize storage
-   StorageService.initializeIfNeeded();
+    // Initialize storage
+    StorageService.initializeIfNeeded();
 
-   // Setup video paths
-   const videoPaths = [];
-   for (let i = 1; i <= 5; i++) {
-     videoPaths.push(`assets/videos/clip_${i}.mp4`);
-   }
+    // Initialize particle system
+    const particleCanvas = document.getElementById('particles');
+    this.particleSystem = new ParticleSystem(particleCanvas);
 
-   // Initialize preloader
-   this.preloader = new VideoPreloader(videoPaths);
-   this.preloader.initialize();
+    // Setup event listeners
+    this.setupEventListeners();
 
-   // Initialize particle system
-   const particleCanvas = document.getElementById('particles');
-   this.particleSystem = new ParticleSystem(particleCanvas);
+    // Update duel count
+    this.updateDuelCount();
 
-   // Setup event listeners
-   this.setupEventListeners();
-
-   // Update duel count
-   this.updateDuelCount();
-
-   // Update user ELO display
-   this.updateUserELO();
+    // Update user ELO display
+    this.updateUserELO();
   }
 
   setupEventListeners() {
@@ -43,27 +37,23 @@ class ArenaService {
     const nextVideo = document.getElementById('next-video');
     const flashOverlay = document.getElementById('flash-overlay');
     
-    // Touch events for mobile
+    // Touch events for mobile - SWIPE UP TO WIN
     currentVideo.addEventListener('touchstart', (e) => {
-      this.touchStartX = e.changedTouches[0].screenX;
-      this.touchStartY = e.changedTouches[0].screenY;
+      this.touchStartY = e.changedTouches[0].clientY;
     }, { passive: true });
     
     currentVideo.addEventListener('touchend', (e) => {
-      this.touchEndX = e.changedTouches[0].screenX;
-      this.touchEndY = e.changedTouches[0].screenY;
-      this.handleSwipe(currentVideo, 'left');
+      this.touchEndY = e.changedTouches[0].clientY;
+      this.handleSwipe('left'); // Left video wins
     }, { passive: true });
     
     nextVideo.addEventListener('touchstart', (e) => {
-      this.touchStartX = e.changedTouches[0].screenX;
-      this.touchStartY = e.changedTouches[0].screenY;
+      this.touchStartY = e.changedTouches[0].clientY;
     }, { passive: true });
     
     nextVideo.addEventListener('touchend', (e) => {
-      this.touchEndX = e.changedTouches[0].screenX;
-      this.touchEndY = e.changedTouches[0].screenY;
-      this.handleSwipe(nextVideo, 'right');
+      this.touchEndY = e.changedTouches[0].clientY;
+      this.handleSwipe('right'); // Right video wins
     }, { passive: true });
     
     // Mouse events for desktop
@@ -71,30 +61,26 @@ class ArenaService {
     
     currentVideo.addEventListener('mousedown', (e) => {
       isDragging = true;
-      this.touchStartX = e.clientX;
       this.touchStartY = e.clientY;
     });
     
     currentVideo.addEventListener('mouseup', (e) => {
       if (isDragging) {
-        this.touchEndX = e.clientX;
         this.touchEndY = e.clientY;
-        this.handleSwipe(currentVideo, 'left');
+        this.handleSwipe('left');
         isDragging = false;
       }
     });
     
     nextVideo.addEventListener('mousedown', (e) => {
       isDragging = true;
-      this.touchStartX = e.clientX;
       this.touchStartY = e.clientY;
     });
     
     nextVideo.addEventListener('mouseup', (e) => {
       if (isDragging) {
-        this.touchEndX = e.clientX;
         this.touchEndY = e.clientY;
-        this.handleSwipe(nextVideo, 'right');
+        this.handleSwipe('right');
         isDragging = false;
       }
     });
@@ -105,14 +91,13 @@ class ArenaService {
     }, { passive: false });
   }
 
-  handleSwipe(videoElement, side) {
+  handleSwipe(side) {
     if (this.isProcessingVote) return;
     
-    const deltaX = this.touchEndX - this.touchStartX;
-    const deltaY = this.touchEndY - this.touchStartY;
+    const deltaY = this.touchStartY - this.touchEndY;
     
-    // Check if it's a swipe up
-    if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY < -50) {
+    // If swipe UP (>50px), winner
+    if (deltaY > 50) {
       this.isProcessingVote = true;
       this.processVote(side);
     }
@@ -134,60 +119,37 @@ class ArenaService {
       return;
     }
     
-    // In this implementation, the user is always dueling against clips
-    // Left side is current clip vs user, right side is next clip vs user
-    let opponentClip, userWon;
+    // Determine winner and loser between the two clips
+    const winnerClip = winningSide === 'left' ? currentClip : nextClip;
+    const loserClip = winningSide === 'left' ? nextClip : currentClip;
     
-    if (winningSide === 'left') {
-      // User beat the current clip
-      opponentClip = currentClip;
-      userWon = true;
-    } else {
-      // User lost to the next clip
-      opponentClip = nextClip;
-      userWon = false;
-    }
+    // Calculate ELO changes
+    const eloResult = ELOCalculator.calculateDuel(winnerClip, loserClip);
     
-    // Calculate ELO changes between user and opponent
-    const eloResult = userWon 
-      ? ELOCalculator.calculateDuel(userProfile, opponentClip)
-      : ELOCalculator.calculateDuel(opponentClip, userProfile);
-    
-    // Update user profile
-    if (userWon) {
-      userProfile.elo = eloResult.new_winner_elo;
-      userProfile.wins++;
-      opponentClip.elo = eloResult.new_loser_elo;
-    } else {
-      userProfile.elo = eloResult.new_loser_elo;
-      userProfile.losses++;
-      opponentClip.elo = eloResult.new_winner_elo;
-    }
-    
-    userProfile.duels_played++;
+    // Update clips
+    winnerClip.elo = eloResult.new_winner_elo;
+    loserClip.elo = eloResult.new_loser_elo;
     
     // Save updates
     StorageService.saveClips(clips);
-    StorageService.saveProfile(userProfile);
     
     // Record vote
     const vote = {
       timestamp: new Date().toISOString(),
-      winnerId: userWon ? userProfile.id : opponentClip.id,
-      loserId: userWon ? opponentClip.id : userProfile.id,
-      eloChange: userWon ? eloResult.winner_delta : eloResult.loser_delta
+      winnerId: winnerClip.id,
+      loserId: loserClip.id,
+      winnerElo: eloResult.winner_delta
     };
     StorageService.saveVote(vote);
     
     // Trigger animations
-    const eloDelta = userWon ? eloResult.winner_delta : eloResult.loser_delta;
+    const eloDelta = eloResult.winner_delta;
     this.triggerVictoryAnimations(winningSide, eloDelta);
     
     // Move to next duel
     setTimeout(() => {
       this.preloader.nextDuel();
       this.updateDuelCount();
-      this.updateUserELO();
       this.isProcessingVote = false;
     }, 1500);
   }
@@ -203,7 +165,18 @@ class ArenaService {
     // ELO delta animation
     const color = eloDelta > 0 ? '#00FFD0' : '#FF3B3B';
     const text = eloDelta > 0 ? `+${eloDelta} ELO` : `${eloDelta} ELO`;
-    Animations.animateELODelta(text, color);
+    
+    // Show and animate ELO delta
+    const eloDeltaElement = document.getElementById('elo-delta');
+    eloDeltaElement.textContent = text;
+    eloDeltaElement.style.color = color;
+    eloDeltaElement.classList.remove('hidden');
+    eloDeltaElement.classList.add('show');
+    
+    setTimeout(() => {
+      eloDeltaElement.classList.remove('show');
+      eloDeltaElement.classList.add('hidden');
+    }, 1000);
     
     // Particles
     const rect = winningSide === 'left' ? currentVideo.getBoundingClientRect() : nextVideo.getBoundingClientRect();

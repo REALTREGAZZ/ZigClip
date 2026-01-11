@@ -1,121 +1,40 @@
-class MainApp {
-  constructor() {
-    this.arenaService = null;
-    this.currentScreen = 'arena';
-  }
+// ZIGCLIP Main Application - Fixed initialization flow
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('🚀 ZIGCLIP starting...');
 
-  initialize() {
-    // Register service worker for PWA
-    this.registerServiceWorker();
-    
-    // Initialize storage
-    StorageService.initializeIfNeeded();
-    
-    // Setup navigation
-    this.setupNavigation();
-    
-    // Initialize arena
-    this.showArena();
-    
-    // Check if we're running as PWA
-    this.checkPWAInstall();
-  }
+  // 1. Initialize storage
+  StorageService.initializeIfNeeded();
 
-  registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(registration => {
-            console.log('ServiceWorker registration successful');
-          })
-          .catch(err => {
-            console.log('ServiceWorker registration failed: ', err);
-          });
-      });
-    }
-  }
+  // 2. Load clips
+  const clips = StorageService.loadClips();
+  console.log(`📹 ${clips.length} clips cargados`);
 
-  setupNavigation() {
-   const navButtons = {
-     'nav-arena': 'arena',
-     'nav-ranking': 'ranking',
-     'nav-brag': 'brag'
-   };
+  // 3. Create video paths
+  const videoPaths = clips.map(c => c.video);
 
-   Object.entries(navButtons).forEach(([buttonId, screenName]) => {
-     const button = document.getElementById(buttonId);
-     if (button) {
-       button.addEventListener('click', () => {
-         this.showScreen(screenName);
-       });
-     }
-   });
-  }
+  // 4. Initialize preloader (WITHOUT autoplay)
+  const preloader = new VideoPreloader(videoPaths);
+  await preloader.initialize();
 
-  showScreen(screenName) {
-    // Hide all screens
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.classList.remove('active'));
+  // 5. Initialize arena
+  const arena = new ArenaService();
+  arena.setPreloader(preloader);
+  arena.initialize();
+
+  // 6. Setup START button
+  document.getElementById('start-button').addEventListener('click', async () => {
+    console.log('▶️ START clicked - reproducing video');
     
-    // Remove active class from nav buttons
-    const navButtons = document.querySelectorAll('.nav-btn');
-    navButtons.forEach(btn => btn.classList.remove('active'));
+    // Hide overlay, show arena
+    document.getElementById('startup-overlay').classList.add('hidden');
+    document.getElementById('arena-container').classList.add('show');
     
-    // Show selected screen
-    const screen = document.getElementById(screenName);
-    screen.classList.add('active');
-    
-    // Activate corresponding nav button
-    const navButton = document.getElementById(`nav-${screenName}`);
-    navButton.classList.add('active');
-    
-    this.currentScreen = screenName;
-    
-    // Initialize screen-specific functionality
-    switch (screenName) {
-      case 'arena':
-        this.showArena();
-        break;
-      case 'ranking':
-        this.showRanking();
-        break;
-      case 'brag':
-        this.showBrag();
-        break;
-    }
-  }
+    // Now play video (after user interaction)
+    await preloader.play();
+  });
 
-  showArena() {
-    if (!this.arenaService) {
-      this.arenaService = new ArenaService();
-      this.arenaService.initialize();
-    }
-  }
+  // 7. Save references globally
+  window.ZIGCLIP = { preloader, arena };
 
-  showRanking() {
-    RankingService.updateRankingDisplay();
-    RankingService.setupFilterTabs();
-  }
-
-  showBrag() {
-    BragService.updateBragDisplay();
-  }
-
-  checkPWAInstall() {
-    // Check if app is installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      console.log('App is installed as PWA');
-    }
-    
-    // Listen for app installed event
-    window.addEventListener('appinstalled', () => {
-      console.log('App was installed');
-    });
-  }
-}
-
-// Initialize app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  const app = new MainApp();
-  app.initialize();
+  console.log('✅ ZIGCLIP initialized');
 });
