@@ -27,23 +27,33 @@
 
     <!-- Arena Screen -->
     <div id="arena" class="screen active">
+      <!-- STARTUP OVERLAY -->
+      <div id="startup-overlay" class="startup-overlay">
+        <div class="startup-content">
+          <h1>ZIGCLIP</h1>
+          <p>Enter the Arena</p>
+          <button id="start-button" class="btn-start">START</button>
+        </div>
+      </div>
+
+      <!-- ARENA CONTAINER (hidden until START) -->
       <div class="arena-header">
         <span>DUEL #<span id="duel-count">0</span></span>
         <span id="user-elo">0 ELO</span>
       </div>
       
-      <div class="arena-container">
+      <div class="arena-container" id="arena-container">
         <div class="clip-left">
-          <video id="current-video" playsinline></video>
+          <video id="current-video" playsinline muted preload="auto" style="width: 100%; height: 100%; object-fit: cover;"></video>
           <div class="swipe-indicator">SWIPE UP TO WIN</div>
         </div>
         <div class="clip-right">
-          <video id="next-video" playsinline></video>
+          <video id="next-video" playsinline muted preload="auto" style="width: 100%; height: 100%; object-fit: cover;"></video>
           <div class="swipe-indicator">SWIPE UP TO WIN</div>
         </div>
       </div>
       
-      <div id="elo-delta"></div>
+      <div id="elo-delta" class="elo-delta hidden"></div>
       <canvas id="particles"></canvas>
       <div id="flash-overlay"></div>
     </div>
@@ -132,5 +142,20 @@
   <script src="js/brag.js"></script>
   <script src="js/arena.js"></script>
   <script src="js/main.js"></script>
+
+  <!-- Service Worker Registration (commented to fix CSP issues) -->
+  <script>
+    // if ('serviceWorker' in navigator) {
+    //   window.addEventListener('load', () => {
+    //     navigator.serviceWorker.register('/service-worker.js')
+    //       .then(registration => {
+    //         console.log('ServiceWorker registration successful');
+    //       })
+    //       .catch(err => {
+    //         console.log('ServiceWorker registration failed: ', err);
+    //       });
+    //   });
+    // }
+  </script>
 </body>
 </html>
