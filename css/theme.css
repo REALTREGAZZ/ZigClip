@@ -1,0 +1,15 @@
+:root {
+  --bg-dark: #050505;
+  --bg-secondary: #1a1a1a;
+  --neon-cyan: #00FFD0;
+  --neon-green: #00FF00;
+  --red-loss: #FF3B3B;
+  --text-gray: #B0B0B0;
+  --font-mono: 'Courier New', monospace;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-gray);
+  font-family: var(--font-mono);
+}
